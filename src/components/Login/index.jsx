@@ -50,7 +50,7 @@ const Login = () => {
             description: 'Phone number or password is wrong!'
           })
         }
-        setLoading(false);
+        setLoading(false)
       });
     
   }
