@@ -1,15 +1,58 @@
 import { Wrapper } from './style';
-import { useState } from 'react';
+import { useRef, useState } from 'react';
+import { LoadingOutlined } from '@ant-design/icons';
+import { notification } from 'antd';
+import axios from 'axios';
 
 const Login = () => {
+  const [loading, setLoading] = useState(false);
+  const phoneRef = useRef();
+  const passwordRef = useRef();
   
-  const [userValue, setUserValue] = useState({
-    phoneNumber: "",
-    password: ""
-  });
-  
+  // onkeydown
+  const onKeyDetect = (e) => {
+    if (e.key === 'Enter' || e.type === 'click' || e.keyCode === 13)
+      return onAuth();
+  }
+
   const onAuth = () => {
-    console.log(userValue);
+    
+    const {phoneNumber, password} = {
+      phoneNumber: phoneRef.current.input.value,
+      password: passwordRef.current.input.value
+    };
+    
+    if (!password || !phoneNumber) {
+      return notification.error({ message: "Please fill all the fields!" });
+    }
+    setLoading(true);
+    
+    axios({
+      url: `${process.env.REACT_APP_MAIN_URL}/user/sign-in`,
+      method: 'POST',
+      data: {
+        phoneNumber: `+998${phoneNumber}`,
+        password
+      }
+    })
+      .then((res) => {
+        const { token } = res.data.data;
+        localStorage.setItem('token', token);
+        setLoading(false);
+        return notification.success({message: "Successfully logged in!"})
+      })
+      .catch((res) => {
+        console.log(res);
+        const response = res.response;
+        if (response.status === 409) {
+          notification.error({
+            message: 'User not found',
+            description: 'Phone number or password is wrong!'
+          })
+        }
+        setLoading(false)
+      });
+    
   }
   
   return (
@@ -17,9 +60,24 @@ const Login = () => {
       <Wrapper.Container>
         <Wrapper.Title>Yana bir bor salom!</Wrapper.Title>
         <Wrapper.Description>Biz har kuni kechagidan ko'ra yaxshiroq xizmat ko'rsatishga intilamiz.</Wrapper.Description>
-        <Wrapper.PhoneNumber onChange={(e)=> setUserValue(e.target.value)} bordered={false} addonBefore="+998" placeholder='Enter your number' />
-        <Wrapper.Password onChange={(e)=> setUserValue(e.target.value)} placeholder='Enter your password' />
-        <Wrapper.Button onClick={onAuth}  >Login</Wrapper.Button>
+        <Wrapper.PhoneNumber
+          ref={phoneRef}
+          bordered={false}
+          addonBefore="+998"
+          placeholder='Enter your number'
+          // name='phoneNumber'
+        />
+        <Wrapper.Password
+          ref={passwordRef}
+          placeholder='Enter your password'
+          // name='password'
+          onKeyDown = {onKeyDetect}
+        />
+        <Wrapper.Button onClick={onKeyDetect}>
+           {
+             loading ? <LoadingOutlined /> : 'Login'
+           }
+        </Wrapper.Button>
       </Wrapper.Container>
     </Wrapper>
   )
