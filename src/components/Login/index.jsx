@@ -32,7 +32,7 @@ const Login = () => {
       method: 'POST',
       data: {
         phoneNumber: `+998${phoneNumber}`,
-        password,
+        password
       }
     })
       .then((res) => {
