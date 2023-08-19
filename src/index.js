@@ -8,7 +8,12 @@ import Root from './root';
 const root = ReactDOM.createRoot(document.getElementById('root'));
 root.render(
    <Wrapper>
+<<<<<<< login
      <Root/>
+=======
+    <Root/>
+     {/* <Navbar/> */}
+>>>>>>> local
    </Wrapper>
 );
 
