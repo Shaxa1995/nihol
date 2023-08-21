@@ -19,6 +19,8 @@ const Login = () => {
 
   const onAuth = () => {
     
+    if (loading) return;
+    
     const {phoneNumber, password} = {
       phoneNumber: phoneRef.current.input.value,
       password: passwordRef.current.input.value
@@ -37,8 +39,9 @@ const Login = () => {
       }
     })
       .then((res) => {
-        const { token } = res.data.data;
+        const { token, user } = res.data.data;
         localStorage.setItem('token', token);
+        localStorage.setItem('userData', JSON.stringify(user))
         setLoading(false);
         return notification.success({message: "Successfully logged in!"})
       })
