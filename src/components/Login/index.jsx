@@ -2,9 +2,11 @@ import { Wrapper } from './style';
 import { useRef, useState } from 'react';
 import { LoadingOutlined } from '@ant-design/icons';
 import { notification } from 'antd';
+import { useNotificationAPI } from '../../Generic/NotificationAPI'; 
 import axios from 'axios';
 
 const Login = () => {
+  const statusChecker = useNotificationAPI();
   const [loading, setLoading] = useState(false);
   const phoneRef = useRef();
   const passwordRef = useRef();
@@ -17,42 +19,37 @@ const Login = () => {
 
   const onAuth = () => {
     
+    if (loading) return;
+    
     const {phoneNumber, password} = {
       phoneNumber: phoneRef.current.input.value,
       password: passwordRef.current.input.value
     };
     
-    if (!password || !phoneNumber) {
-      return notification.error({ message: "Please fill all the fields!" });
-    }
-    setLoading(true);
+    if (!password || !phoneNumber) statusChecker(400);
+    
+      setLoading(true);
     
     axios({
       url: `${process.env.REACT_APP_MAIN_URL}/user/sign-in`,
       method: 'POST',
       data: {
         phoneNumber: `+998${phoneNumber}`,
-        password,
+        password
       }
     })
       .then((res) => {
-        const { token } = res.data.data;
+        const { token, user } = res.data.data;
         localStorage.setItem('token', token);
+        localStorage.setItem('userData', JSON.stringify(user))
         setLoading(false);
         return notification.success({message: "Successfully logged in!"})
       })
       .catch((res) => {
-        console.log(res);
-        const response = res.response;
-        if (response.status === 409) {
-          notification.error({
-            message: 'User not found',
-            description: 'Phone number or password is wrong!'
-          })
-        }
+        const status = res.response.status;
         setLoading(false)
+        return statusChecker(status)
       });
-    
   }
   
   return (
@@ -65,12 +62,10 @@ const Login = () => {
           bordered={false}
           addonBefore="+998"
           placeholder='Enter your number'
-          // name='phoneNumber'
         />
         <Wrapper.Password
           ref={passwordRef}
           placeholder='Enter your password'
-          // name='password'
           onKeyDown = {onKeyDetect}
         />
         <Wrapper.Button onClick={onKeyDetect}>
