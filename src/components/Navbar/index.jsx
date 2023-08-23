@@ -1,7 +1,7 @@
 import { Wrapper } from './style';
 import { Dropdown } from 'antd';
 import useDropDownApi from '../../Generic/DropDownApi';
-import UserModal from './UserModal';
+import UserModal from './UserModal'
 
 const Navbar = () => {
   
